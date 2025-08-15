@@ -59,7 +59,17 @@ export async function handlerUploadThumbnail(cfg: ApiConfig, req: BunRequest) {
   }
 
   const imageMediaType = file.type;
+  const allowedMediaTypes = ['image/jpeg', 'image/png'];
+
+  if (!allowedMediaTypes.includes(imageMediaType)) {
+    throw new BadRequestError(
+      `Unsupported media type: ${imageMediaType}. Allowed types are: ${allowedMediaTypes.join(
+        ', '
+      )}`
+    );
+  }
   const fileExtension = imageMediaType.split('/')[1];
+
   const filePath = path.join(cfg.assetsRoot, `${videoId}.${fileExtension}`);
   Bun.write(filePath, await file.arrayBuffer());
 
