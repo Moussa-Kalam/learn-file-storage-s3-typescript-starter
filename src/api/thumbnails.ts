@@ -10,8 +10,6 @@ type Thumbnail = {
   mediaType: string;
 };
 
-const videoThumbnails: Map<string, Thumbnail> = new Map();
-
 export async function handlerGetThumbnail(cfg: ApiConfig, req: BunRequest) {
   const { videoId } = req.params as { videoId?: string };
   if (!videoId) {
@@ -61,7 +59,9 @@ export async function handlerUploadThumbnail(cfg: ApiConfig, req: BunRequest) {
 
   const imageMediaType = file.type;
 
-  const imageData = await file.arrayBuffer();
+  const imageData = Buffer.from(await file.arrayBuffer()).toString('base64');
+  const dataURL = `data:${imageMediaType};base64,${imageData}`;
+
   const video = getVideo(cfg.db, videoId);
 
   if (video?.userID !== userID) {
@@ -70,13 +70,7 @@ export async function handlerUploadThumbnail(cfg: ApiConfig, req: BunRequest) {
     );
   }
 
-  videoThumbnails.set(videoId, {
-    data: imageData,
-    mediaType: imageMediaType,
-  });
-
-  const newThumbnailURL = generateThumbnailURL(cfg, videoId);
-  video.thumbnailURL = newThumbnailURL;
+  video.thumbnailURL = dataURL;
   updateVideo(cfg.db, video);
 
   return respondWithJSON(200, video);
