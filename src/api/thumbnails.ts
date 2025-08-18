@@ -73,7 +73,7 @@ export async function handlerUploadThumbnail(cfg: ApiConfig, req: BunRequest) {
   const filename = crypto.randomBytes(32).toString('base64url');
 
   const filePath = path.join(cfg.assetsRoot, `${filename}.${fileExtension}`);
-  Bun.write(filePath, await file.arrayBuffer());
+  await Bun.write(filePath, await file.arrayBuffer());
 
   const video = getVideo(cfg.db, videoId);
 
@@ -87,8 +87,4 @@ export async function handlerUploadThumbnail(cfg: ApiConfig, req: BunRequest) {
   updateVideo(cfg.db, video);
 
   return respondWithJSON(200, video);
-}
-
-function generateThumbnailURL(cfg: ApiConfig, videoId: string) {
-  return `http://localhost:${cfg.port}/api/thumbnails/${videoId}`;
 }
